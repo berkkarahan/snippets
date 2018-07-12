@@ -19,6 +19,8 @@ class TimeTransformer(object):
         
         if not(isinstance(self.timeseries.index, pd.DatetimeIndex)):
             raise IndexTypeError("Index of given dataset is not of type pandas.DateTimeIndex")
+            
+        return self
         
     def _timefeatures(self):
 
