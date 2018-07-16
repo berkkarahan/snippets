@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 class IndexTypeError(Exception):
     pass
@@ -20,9 +19,12 @@ class TimeTransformer(object):
         
         if not(isinstance(self.timeseries.index, pd.DatetimeIndex)):
             raise IndexTypeError("Index of given dataset is not of type pandas.DateTimeIndex")
+            
+        return self
         
     def _timefeatures(self):
-
+        
+        self._timeseries["Date"] = self._timeseries.index.values
         self._timeseries["Year"] = self._timeseries.Date.apply(lambda x: x.year)
         self._timeseries["Month"] = self._timeseries.Date.apply(lambda x: x.month)
         self._timeseries["Hour"] = self._timeseries.Date.apply(lambda x: x.hour)
@@ -30,7 +32,7 @@ class TimeTransformer(object):
         self._timeseries["DayCount"] = self._timeseries.Date.apply(lambda x: x.toordinal())
 
         self._timeseries = pd.get_dummies(self._timeseries, columns=["Month","Hour","WeekDay"])
-
+        self._timeseries.drop(["Date"], axis=1, inplace=True)
         return self
     
     def transform(self):
