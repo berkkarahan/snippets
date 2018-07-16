@@ -34,10 +34,10 @@ class AutoEncoderReducer():
             prev = itm
         return self
 
-    def _nextpower2(x):
+    def _nextpower2(self,x):
         return 1 if x == 0 else 2**np.ceil(np.log2(x))
 
-    def _prevpower2(x):
+    def _prevpower2(self,x):
         return 1 if x == 0 else 2**np.floor(np.log2(x))
 
     #PUBLIC METHODS
