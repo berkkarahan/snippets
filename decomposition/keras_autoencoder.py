@@ -24,9 +24,21 @@ class AutoEncoderReducer():
         prev = self.X.shape[1]
         for _ in range(0,self.num_layers):
             itm = np.floor(prev - prev*self.shape_reduction)
+
+            if np.abs(self._nextpower2(itm) - itm) > np.abs(self._prevpower2(itm) - itm):
+                itm = self._prevpower2(itm)
+            else:
+                itm = self._nextpower2(itm)
+
             self._size_list.append(itm)
             prev = itm
         return self
+
+    def _nextpower2(x):
+        return 1 if x == 0 else 2**np.ceil(np.log2(x))
+
+    def _prevpower2(x):
+        return 1 if x == 0 else 2**np.floor(np.log2(x))
 
     #PUBLIC METHODS
     def build(self):
