@@ -14,4 +14,4 @@ def load_frame(csv="", json_cols=[], nrows=None):
         col_as_df.columns = [f"{column}.{subcolumn}" for subcolumn in col_as_df.columns]
         df = df.drop(column, axis=1).merge(col_as_df, right_index=True, left_index=True)
         print(f"Loaded {os.path.basename(csv)}. Shape: {df.shape}")
-        return df
+    return df
