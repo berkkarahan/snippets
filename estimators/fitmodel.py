@@ -14,11 +14,11 @@ def fit_model_cv(mdl, x, y, cv=5):
     threadlist = []
     modlist = []
     train_ind = []
-    holdout_ind= []
+    holdout_ind = []
     predictions = []
     score = []
 
-    for tr_i, ho_i in kfold.split(x,y):
+    for tr_i, ho_i in kfold.split(x, y):
         train_ind.append(tr_i)
         holdout_ind.append(ho_i)
         cloned_mdl = clone(mdl)
