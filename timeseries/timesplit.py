@@ -1,4 +1,3 @@
-
 #Expecting X and y as pandas objects(DataFrame or Series)
 def ts_train_test_split(X, y=None, test_size=0.25):
 
