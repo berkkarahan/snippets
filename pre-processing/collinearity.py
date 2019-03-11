@@ -8,10 +8,7 @@ from sklearn.metrics import r2_score
 def _vif_sklearn(exog, exog_idx):
     k_vars = exog.shape[1]
     x_i = exog[:, exog_idx]
-<<<<<<< HEAD
     mask = np.arange(k_vars) != exog_idx
-=======
->>>>>>> c09bea0a207bf93e6da809654914a8afe0398464
     x_noti = exog[:, mask]
     lr = LinearRegression()
     lr.fit(x_i, x_noti)
