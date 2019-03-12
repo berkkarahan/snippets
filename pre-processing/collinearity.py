@@ -14,7 +14,7 @@ def _vif_sklearn(exog, exog_idx):
     x_i = x_i.reshape(-1,1)
     mask = np.arange(k_vars) != exog_idx
     x_noti = exog[:, mask]
-    lr = LinearRegression(n_jobs=-1)
+    lr = LinearRegression()
     lr.fit(x_noti, x_i)
     x_i_pred = lr.predict(x_noti)
     r_squared_i = r2_score(x_i, x_i_pred)
@@ -22,7 +22,8 @@ def _vif_sklearn(exog, exog_idx):
     return vif
 
 class CollinearityReducer:
-    def __init__(self, X, threshold=5.0, lib='statsmodels', vars='float'):
+    def __init__(self, X, threshold=5.0, lib='statsmodels', vars='float', n_jobs=1):
+        self.n_jobs = n_jobs
         self.threshold = threshold
         # Type check lib, sklearn or statsmodels
         if lib == 'sklearn':
@@ -53,8 +54,8 @@ class CollinearityReducer:
         dropped = True
         while dropped:
             dropped = False
-            vif = [self.viffunc(self.X.iloc[:, variables].values, ix)
-                    for ix in range(self.X.iloc[:, variables].shape[1])]
+            with parallel_backend('threading', n_jobs=self.n_jobs):
+                vif = Parallel()(delayed(self.viffunc)(self.X.iloc[:, variables].values, ix) for ix in range(self.X.iloc[:, variables].shape[1]))
             maxloc = vif.index(max(vif))
             if max(vif) > self.threshold:
                 print('dropping ' + self.X.iloc[:, variables].columns[maxloc] + ' at index: ' + str(maxloc))
