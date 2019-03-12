@@ -6,6 +6,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 from joblib import Parallel, delayed, parallel_backend
 
+
+# Calculating VIF with sklearn is much faster due to parallelized linear-regression.
 def _vif_sklearn(exog, exog_idx):
     k_vars = exog.shape[1]
     x_i = exog[:, exog_idx]
@@ -28,7 +30,8 @@ class CollinearityReducer:
         elif lib == 'statsmodels':
             self.viffunc = variance_inflation_factor
         else:
-            print('Lib is entered wrongly, falling back to default lib: statsmodels.')
+            print('Lib is entered wrongly, falling back to default lib: scikit-learn.')
+            self.viffunc = _vif_sklearn
 
         # Type check X, pandas.DataFrame
         if not isinstance(X, pd.DataFrame):
@@ -49,6 +52,7 @@ class CollinearityReducer:
         variables = list(range(self.X.shape[1]))
         dropped = True
         while dropped:
+            dropped = False
             vif = [self.viffunc(self.X.iloc[:, variables].values, ix)
                     for ix in range(self.X.iloc[:, variables].shape[1])]
             maxloc = vif.index(max(vif))
