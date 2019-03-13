@@ -14,7 +14,7 @@ def _vif_sklearn(exog, exog_idx):
     x_i = x_i.reshape(-1,1)
     mask = np.arange(k_vars) != exog_idx
     x_noti = exog[:, mask]
-    lr = LinearRegression()
+    lr = LinearRegression(fit_intercept=False)
     lr.fit(x_noti, x_i)
     x_i_pred = lr.predict(x_noti)
     r_squared_i = r2_score(x_i, x_i_pred)
