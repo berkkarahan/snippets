@@ -4,22 +4,7 @@ import pandas as pd
 from statsmodels.stats.outliers_influence import variance_inflation_factor
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
-from joblib import Parallel, delayed, parallel_backend
-
-
-# Calculating VIF with sklearn is much faster due to parallelized linear-regression.
-def _vif_sklearn(exog, exog_idx):
-    k_vars = exog.shape[1]
-    x_i = exog[:, exog_idx]
-    x_i = x_i.reshape(-1,1)
-    mask = np.arange(k_vars) != exog_idx
-    x_noti = exog[:, mask]
-    lr = LinearRegression(fit_intercept=False)
-    lr.fit(x_noti, x_i)
-    x_i_pred = lr.predict(x_noti)
-    r_squared_i = r2_score(x_i, x_i_pred)
-    vif = 1. / (1. - r_squared_i)
-    return vif
+from sklearn.externals.joblib import Parallel, delayed, parallel_backend
 
 class CollinearityReducer:
     def __init__(self, X, threshold=5.0, lib='statsmodels', vars='float', n_jobs=1):
@@ -54,8 +39,7 @@ class CollinearityReducer:
         dropped = True
         while dropped:
             dropped = False
-            with parallel_backend('threading', n_jobs=self.n_jobs):
-                vif = Parallel()(delayed(self.viffunc)(self.X.iloc[:, variables].values, ix) for ix in range(self.X.iloc[:, variables].shape[1]))
+            vif = _calculate_vif()
             maxloc = vif.index(max(vif))
             if max(vif) > self.threshold:
                 print('dropping ' + self.X.iloc[:, variables].columns[maxloc] + ' at index: ' + str(maxloc))
@@ -64,3 +48,28 @@ class CollinearityReducer:
         print('Remaining variables:')
         print(self.X.columns[variables])
         return self.X.iloc[:, variables]
+
+    def _vif_sklearn(exog, exog_idx):
+        k_vars = exog.shape[1]
+        x_i = exog[:, exog_idx]
+        x_i = x_i.reshape(-1,1)
+        mask = np.arange(k_vars) != exog_idx
+        x_noti = exog[:, mask]
+        lr = LinearRegression(fit_intercept=False, n_jobs=self.n_jobs)
+        lr.fit(x_noti, x_i)
+        x_i_pred = lr.predict(x_noti)
+        r_squared_i = r2_score(x_i, x_i_pred)
+        vif = 1. / (1. - r_squared_i)
+        return vif
+
+    # Calculating VIF with sklearn is much faster due to parallelized linear-regression.
+    # For scikit-learn, we'll let its internal parallelization rather than spawning threads from a higher level.
+    def _calculate_vif(self):
+        if lib == 'sklearn':
+            vif = [self.viffunc(self.X.iloc[:, variables], ix) for ix in range(self.X.iloc[:, variables].shape[1])]
+        elif lib == 'statsmodels':
+            with parallel_backend('threading', n_jobs=self.n_jobs):
+                vif = Parallel()(delayed(self.viffunc)(self.X.iloc[:, variables].values, ix) for ix in range(self.X.iloc[:, variables].shape[1]))
+        else:
+            vif = [self.viffunc(self.X.iloc[:, variables], ix) for ix in range(self.X.iloc[:, variables].shape[1])]
+        return vif
