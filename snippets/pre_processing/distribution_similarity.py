@@ -42,5 +42,5 @@ def different_columns(train_df, test_df, threshold=0.1):
 def get_similar_features(train_df, test_df, threshold=0.1):
     diff_df = different_columns(train_df, test_df, threshold)
     train_new = train_df.copy().drop(diff_df.feature.values, axis=1)
-    test_new = test.df.copy().drop(diff_df.feature.values, axis=1)
+    test_new = test_df.copy().drop(diff_df.feature.values, axis=1)
     return train_new, test_new
